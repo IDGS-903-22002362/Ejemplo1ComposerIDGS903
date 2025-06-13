@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,18 +25,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 private val tarjetas: List<PersonajeTarjeta> = listOf(
     PersonajeTarjeta(
-        "A 16",
+        "A16",
         "Android 16 es un androide gigante conocido por su amor a la naturaleza y la vida"
     ),
     PersonajeTarjeta(
@@ -98,7 +106,7 @@ fun Mypersonaje(personaje: PersonajeTarjeta) {
             modifier = Modifier.padding(8.dp)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            ImagenHeroe()
+            ImagenHeroe(personaje.title)
             Personajes(personaje)
         }
     }
@@ -106,27 +114,40 @@ fun Mypersonaje(personaje: PersonajeTarjeta) {
 }
 
 @Composable
-fun Personaje(name:String, color: Color, style:TextStyle){
-    Text(text = name)
+fun Personaje(name:String, color: Color, style:TextStyle, lines:Int=Int.MAX_VALUE){
+    Text(text = name, color = color, style = style, maxLines=lines)
 }
 
 @Composable
 fun Personajes(personaje: PersonajeTarjeta){
-    Column {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column (modifier = Modifier.padding(start = 8.dp).clickable {
+        expanded = !expanded
+    })
+    {
         Personaje(personaje.title,
             MaterialTheme.colorScheme.primary,
             MaterialTheme.typography.headlineMedium)
 
         Personaje(personaje.body,
             MaterialTheme.colorScheme.onBackground,
-            MaterialTheme.typography.bodyLarge)
+            MaterialTheme.typography.bodyLarge,
+            if(expanded) Int.MAX_VALUE else 1
+        )
     }
 }
 
 @Composable
-fun ImagenHeroe(){
+fun ImagenHeroe(imageName: String){
+    val context = LocalContext.current
+    val imageResId= remember (imageName){
+        context.resources.getIdentifier(imageName.toLowerCase(), "drawable", context.packageName)
+
+    }
+
     Image(
-        painter = painterResource(R.drawable.goku),
+        painter = painterResource(id = imageResId),
         contentDescription = "Goku",
         modifier = Modifier
             .padding(16.dp)
